@@ -2,8 +2,23 @@ import mqtt from "../../utils/mqtt.min.js";
 
 Page({
   data: {
+    connectStatus: false,
+    connectStatusText: "未连接",
+    connectStatusTextClass: "disconnect-text",
+    connectStatusIconClass: "disconnect-icon",
+
+    wifiInfo: {}, // 用于存放 WiFi 信息
+
     client: null,
     conenctBtnText: "连接",
+    // host: "wx.emqxcloud.cn",
+    // subTopic: "testtopic/miniprogram",
+    // pubTopic: "testtopic/miniprogram",
+    // pubMsg: "Hello! I am from WeChat miniprogram",
+    // receivedMsg: "",
+    // mqttOptions: {
+    //   username: "test",
+    //   password: "test",
     host: "sea6eeea.ala.cn-hangzhou.emqxsl.cn",
     subTopic: "testtopic/miniprogram",
     pubTopic: "testtopic/miniprogram",
@@ -40,11 +55,47 @@ Page({
     this.setValue("receivedMsg", msg);
   },
 
+  onLoad: function () {
+    // 启用 WiFi 功能
+    // this.startWifi();
+
+    // 获取当前连接的 WiFi 信息
+    // this.getConnectedWifiInfo();
+  },
+
+  startWifi: function () {
+    wx.startWifi({
+      success: (res) => {
+        console.log('启用 WiFi 功能成功', res);
+      },
+      fail: (error) => {
+        console.error('启用 WiFi 功能失败', error);
+      },
+    });
+  },
+  getConnectedWifiInfo: function () {
+    wx.getConnectedWifi({
+      success: (res) => {
+        const wifiInfo = res.wifi;
+        console.log('WIFI 信息', wifiInfo);
+        this.setData({
+          wifiInfo: wifiInfo,
+        });
+      },
+      fail: (error) => {
+        console.error('获取当前连接的 WiFi 信息失败', error);
+      },
+    });
+  },
+
   connect() {
     // MQTT-WebSocket 统一使用 /path 作为连接路径，连接时需指明，但在 EMQX Cloud 部署上使用的路径为 /mqtt
     // 因此不要忘了带上这个 /mqtt !!!
     // 微信小程序中需要将 wss 协议写为 wxs，且由于微信小程序出于安全限制，不支持 ws 协议
     try {
+      wx.showLoading({
+        title: '连接中',
+      })
       this.setValue("conenctBtnText", "连接中...");
       const clientId = new Date().getTime();
       this.data.client = mqtt.connect(`wxs://${this.data.host}:8084/mqtt`, {
@@ -53,10 +104,11 @@ Page({
       });
 
       this.data.client.on("connect", () => {
+        wx.hideLoading()
         wx.showToast({
           title: "连接成功",
         });
-        this.setValue("conenctBtnText", "连接成功");
+        this.setConnectStatus(true);
 
         this.data.client.on("message", (topic, payload) => {
           wx.showModal({
@@ -68,24 +120,24 @@ Page({
         });
 
         this.data.client.on("error", (error) => {
-          this.setValue("conenctBtnText", "连接");
+          this.setConnectStatus(false);
           console.log("onError", error);
         });
 
         this.data.client.on("reconnect", () => {
-          this.setValue("conenctBtnText", "连接");
+          this.setConnectStatus(false);
           console.log("reconnecting...");
         });
 
         this.data.client.on("offline", () => {
-          this.setValue("conenctBtnText", "连接");
+          this.setConnectStatus(false);
           console.log("onOffline");
         });
         // 更多 MQTT.js 相关 API 请参阅 https://github.com/mqttjs/MQTT.js#api
       });
     } catch (error) {
       this.setValue("conenctBtnText", "连接");
-      console.log("mqtt.connect error", error);
+      this.setConnectStatus(false);
     }
   },
 
@@ -133,9 +185,31 @@ Page({
   disconnect() {
     this.data.client.end();
     this.data.client = null;
-    this.setValue("conenctBtnText", "连接");
+    this.setConnectStatus(false);
     wx.showToast({
       title: "成功断开连接",
     });
+  },
+
+  setConnectStatus(status) {
+    if (status) {
+      console.log("status: " + status);
+      this.setData({
+        "conenctBtnText": "连接成功",
+        "connectStatus": true,
+        "connectStatusText": "已连接",
+        "connectStatusTextClass": "connected-text",
+        "connectStatusIconClass": "connected-icon",
+      })
+    } else {
+      console.log("status: " + status);
+      this.setData({
+        "conenctBtnText": "未连接",
+        "connectStatus": false,
+        "connectStatusText": "未连接",
+        "connectStatusTextClass": "disconnect-text",
+        "connectStatusIconClass": "disconnect-icon"
+      })
+    }
   },
 });

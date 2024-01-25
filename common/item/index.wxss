@@ -1,0 +1,24 @@
+/* my-custom-component.wxss */
+.custom-container {
+  display: flex;
+  /* align-items: center; */
+  flex-direction: row;
+  margin-bottom: 20rpx;
+  margin-left: 12rpx;
+  /* border: 2rpx solid red; */
+}
+
+.title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #000000;
+}
+
+.content {
+  display: flex; 
+  flex-direction: row;
+  font-size: 16px;
+  font-weight: 500;
+  /* border: 2rpx solid slateblue; */
+  align-items: center;
+}

@@ -1,0 +1,6 @@
+<view class="custom-container">
+  <view class="title">{{ title }}</view>
+  <view class="content">
+    <slot></slot>
+  </view>
+</view>

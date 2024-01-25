@@ -1,10 +1,30 @@
 <view class="container">
-  <view class="label">连接地址（域名）：</view>
-  <input bindinput="setHost" value="{{ host }}" />
-  <view class="is-flex">
-    <button type="primary" bindtap="connect">{{ conenctBtnText }}</button>
-    <button type="warn" disabled="{{ conenctBtnText === '连接' }}" bindtap="disconnect">断开连接</button>
+  <view class="device-info">
+    <text class="title">设备信息</text>
+    <view class="content">
+      <item title="连接地址：">
+        {{ host }}
+      </item>
+      <item title=" 连接状态：">
+        <view class="{{ connectStatusTextClass }}">
+          {{ connectStatusText }}
+        </view>
+        <view class="{{ 'connect-status-icon ' + connectStatusIconClass }}"></view>
+        <!-- <view wx:if="{{ connectStatus }}" class="connect-btn disconnect-icon" bindtap="disconnect">断开</view>
+        <view wx:else="{{ connectStatus }}"  class="connect-btn connected-btn" bindtap="connect">连接</view> -->
+      </item>
+      <item title="订阅主题：">
+        {{ subTopic }}
+      </item>
+      <view style="margin: 40rpx; display: flex;justify-content: center;">
+        <view wx:if="{{ connectStatus }}" class="connect-btn disconnect-icon" bindtap="disconnect">断开</view>
+        <view wx:else="{{ connectStatus }}"  class="connect-btn connected-btn" bindtap="connect">连接到服务器</view>
+      </view>
+    </view>
   </view>
+
+  
+
   <view class="label">订阅主题：</view>
   <input bindinput="setSubTopic" value="{{ subTopic }}" />
   <view class="is-flex">

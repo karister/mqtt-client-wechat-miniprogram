@@ -1,4 +1,6 @@
 /**app.wxss**/
 .container {
-  padding: 48rpx;
+  padding: 24rpx;
+  /* font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; */
 }
+
