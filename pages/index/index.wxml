@@ -23,21 +23,17 @@
     </view>
   </view>
 
+  <data-point wx:if="{{point.type === 'data'}}" wx:for="{{dataPointList}}" wx:for-item="point" wx:key="key" name="{{point.name}}" value="{{point.value}}" filed="{{point.filed}}" unit="{{point.unit}}"></data-point>
+
+  <item wx:if="{{switch.type === 'switch'}}" wx:for="{{dataPointList}}" wx:for-item="switch" wx:key="key" title="{{switch.name}}">
+    <switch class="item-switch" checked="{{switch.value}}" bindchange="switchChange" data-index="{{index}}"/>
+  </item>
+
+  <item title="灯光阈值"> 
+  </item>
+  <slider wx:if="{{slider.type === 'slider'}}" wx:for="{{dataPointList}}" wx:for-item="slider" wx:key="key" value="{{slider.value}}" show-value bindchange="sliderChange" data-index="{{index}}" left-icon="cancel" right-icon="success_no_circle"/>
   
 
-  <view class="label">订阅主题：</view>
-  <input bindinput="setSubTopic" value="{{ subTopic }}" />
-  <view class="is-flex">
-    <button type="primary" bindtap="subscribe">订阅</button>
-    <button type="warn" bindtap="unsubscribe">取消订阅</button>
-  </view>
-  <view class="label">发布主题：</view>
-  <input bindinput="setPubTopic" value="{{ pubTopic }}" />
-  <view class="label">发布消息：</view>
-  <input bindinput="setPubMsg" value="{{ pubMsg }}"></input>
-  <view class="is-flex">
-    <button type="primary" bindtap="publish">发布</button>
-  </view>
   <view class="label">收到的消息：</view>
   <view class="received-msg-box">
     <rich-text nodes="{{receivedMsg }}"></rich-text>

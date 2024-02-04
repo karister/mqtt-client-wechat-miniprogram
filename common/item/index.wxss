@@ -1,5 +1,6 @@
 /* my-custom-component.wxss */
 .custom-container {
+  width: 100%;
   display: flex;
   /* align-items: center; */
   flex-direction: row;
@@ -12,9 +13,11 @@
   font-size: 34rpx;
   font-weight: 700;
   color: #000000;
+  /* border:  2rpx solid red; */
 }
 
 .content {
+  flex-grow: 1;
   display: flex; 
   flex-direction: row;
   font-size: 16px;

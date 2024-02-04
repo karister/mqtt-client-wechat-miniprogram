@@ -40,7 +40,7 @@ button[type="warn"] {
 .device-info {
   border: 5rpx solid rgb(255, 255, 255);
   border-radius: 20rpx;
-  box-shadow: 0rpx 0rpx 20rpx 20rpx rgba(12, 12, 12, 0.08);
+  box-shadow: 15rpx 15rpx 20rpx 10rpx rgb(177, 168, 168);
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -86,4 +86,9 @@ button[type="warn"] {
 
 .connect-btn {
   font-size: 30rpx; color: white;height: 70rpx; width: 250rpx;border-radius: 6rpx;display: flex;align-items: center;justify-content: center;margin-left: 20rpx;
+}
+
+.item-switch {
+  margin-left: auto;
+  margin-right: 50rpx;
 }

@@ -9,6 +9,41 @@ Page({
 
     wifiInfo: {}, // 用于存放 WiFi 信息
 
+    dataPointList: [ // 数据点信息
+      {
+        type: "data", 
+        name: "温度",
+        value: "20",
+        filed: "temp",
+        unit: "°C"
+      },
+      {
+        type: "data",
+        name: "湿度",
+        value: "47",
+        filed: "humi",
+        unit: "%"
+      },
+      {
+        type: "switch",
+        name: "灯光",
+        value: true,
+        filed: "led"
+      },
+      {
+        type: "switch",
+        name: "窗户",
+        value: false,
+        filed: "window"
+      },
+      {
+        type: "slider",
+        name: "亮度",
+        value: 50,
+        filed: "brightness"
+      },
+    ],
+
     client: null,
     conenctBtnText: "连接",
     // host: "wx.emqxcloud.cn",
@@ -19,14 +54,14 @@ Page({
     // mqttOptions: {
     //   username: "test",
     //   password: "test",
-    host: "sea6eeea.ala.cn-hangzhou.emqxsl.cn",
-    subTopic: "testtopic/miniprogram",
-    pubTopic: "testtopic/miniprogram",
-    pubMsg: "Hello! I am from WeChat miniprogram",
+    host: "b161900c.cn-hangzhou.emqx.cloud",
+    subTopic: "yuqing/miniprogram",
+    pubTopic: "yuqing/miniprogram",
+    pubMsg: "{\"temp\": \"28\"}",
     receivedMsg: "",
     mqttOptions: {
-      username: "karister",
-      password: "123456abc",
+      username: "wechat",
+      password: "wechat",
       reconnectPeriod: 1000, // 1000毫秒，设置为 0 禁用自动重连，两次重新连接之间的间隔时间
       connectTimeout: 30 * 1000, // 30秒，连接超时时间
       // 更多参数请参阅 MQTT.js 官网文档：https://github.com/mqttjs/MQTT.js#mqttclientstreambuilder-options
@@ -88,6 +123,25 @@ Page({
     });
   },
 
+  message_received_callback(topic, payload) {
+    console.log('message_received_callback! payload is: ', payload.toString());
+    const jsonPayload = JSON.parse(payload.toString());
+    for (const dataPoint of this.data.dataPointList) {
+      const field = dataPoint.filed;
+      if (jsonPayload.hasOwnProperty(field)) {
+        // 更新数据点的值
+        dataPoint.value = jsonPayload[field];
+        console.log(dataPoint.filed,":", dataPoint.value);
+      }
+    }
+    // 更新页面数据
+    this.setData({
+      dataPointList: this.data.dataPointList
+    });
+    const currMsg = this.data.receivedMsg ? `<br/>${payload}` : payload;
+    this.setValue("receivedMsg", this.data.receivedMsg.concat(currMsg));
+  },
+
   connect() {
     // MQTT-WebSocket 统一使用 /path 作为连接路径，连接时需指明，但在 EMQX Cloud 部署上使用的路径为 /mqtt
     // 因此不要忘了带上这个 /mqtt !!!
@@ -110,18 +164,10 @@ Page({
         });
         this.setConnectStatus(true);
 
-        this.data.client.on("message", (topic, payload) => {
-          wx.showModal({
-            content: `收到消息 - Topic: ${topic}，Payload: ${payload}`,
-            showCancel: false,
-          });
-          const currMsg = this.data.receivedMsg ? `<br/>${payload}` : payload;
-          this.setValue("receivedMsg", this.data.receivedMsg.concat(currMsg));
-        });
+        this.subscribe();
 
-        this.data.client.on("error", (error) => {
-          this.setConnectStatus(false);
-          console.log("onError", error);
+        this.data.client.on("message", (topic, payload) => {
+          this.message_received_callback(topic, payload)
         });
 
         this.data.client.on("reconnect", () => {
@@ -144,10 +190,10 @@ Page({
   subscribe() {
     if (this.data.client) {
       this.data.client.subscribe(this.data.subTopic);
-      wx.showModal({
-        content: `成功订阅主题：${this.data.subTopic}`,
-        showCancel: false,
-      });
+      // wx.showModal({
+      //   content: `成功订阅主题：${this.data.subTopic}`,
+      //   showCancel: false,
+      // });
       return;
     }
     wx.showToast({
@@ -171,9 +217,9 @@ Page({
     });
   },
 
-  publish() {
+  publish(msg) {
     if (this.data.client) {
-      this.data.client.publish(this.data.pubTopic, this.data.pubMsg);
+      this.data.client.publish(this.data.pubTopic, msg);
       return;
     }
     wx.showToast({
@@ -186,6 +232,7 @@ Page({
     this.data.client.end();
     this.data.client = null;
     this.setConnectStatus(false);
+    this.setValue("receivedMsg", "");
     wx.showToast({
       title: "成功断开连接",
     });
@@ -211,5 +258,49 @@ Page({
         "connectStatusIconClass": "disconnect-icon"
       })
     }
+  },
+
+  switchChange(event) {
+     // 获取当前 switch 组件的索引
+     const index = event.currentTarget.dataset.index;
+
+     // 获取当前 switch 的值
+     const switchValue = event.detail.value;
+ 
+     // 更新 dataPointList 中对应项的值
+     this.setData({
+       [`dataPointList[${index}].value`]: switchValue
+     });
+
+     // 推送更新的数据
+     const updateJsonStr = JSON.stringify({
+      [this.data.dataPointList[index].filed]: switchValue
+    });
+    console.log('changed:', updateJsonStr);
+    this.publish(updateJsonStr);
+ 
+     // 打印更新后的数据
+     console.log('Switch changed:', this.data.dataPointList);
+  },
+
+  sliderChange(event) {
+    const index = event.currentTarget.dataset.index;
+    const sliderValue = event.detail.value;
+
+    // 构建更新的 JSON 对象
+    const updateObject = {
+      [this.data.dataPointList[index].filed]: sliderValue
+    };
+
+    // 转换为 JSON 字符串（如果需要字符串格式）
+    const updateJsonStr = JSON.stringify(updateObject);
+
+    // 更新 dataPointList 中对应项的值
+    this.setData({
+      [`dataPointList[${index}].value`]: sliderValue
+    });
+
+    // 调用推送逻辑，并将更新的 JSON 对象传入
+    this.publish(updateJsonStr);
   },
 });

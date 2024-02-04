@@ -1,0 +1,8 @@
+.container {
+  font-weight: 800;
+  /* border: 2rpx solid black; */
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  margin-left: 12rpx;
+}
